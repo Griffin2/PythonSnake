@@ -13,7 +13,7 @@ play_surface = pygame.display.set_mode((720,460))
 pygame.display.set_caption("Py Eating")
 
 # Colors
-blue = pygame.Color(175, 238, 238) #Snake
+blue = pygame.Color(175, 238, 238, 1) #Snake
 black = pygame.Color(0, 0, 0) #Score
 red = pygame.Color(255, 0, 0) # End Game
 white = pygame.Color(255, 255, 255) #Background
@@ -28,9 +28,9 @@ snake_position = [100, 50]
 snake_body = [[100, 50], [90, 50], [80, 50]]
 food_position = [(random.randrange(1, 72)*10), (random.randrange(1, 46)*10)]
 food_spawn = True
-# poison_position = [(random.randrange(1, 72)*10), (random.randrange(1, 46)*10)]
-# poison_spawn = True
-# speed = 30 ##fps?
+poison_position = [(random.randrange(1, 72)*10), (random.randrange(1, 46)*10)]
+poison_spawn = True
+game_speed = 17
 direction = "RIGHT"
 change_to = direction
 score = 0
@@ -42,23 +42,27 @@ def endGame():
     go_rectangle = go_surface.get_rect()
     go_rectangle.midtop = (360, 15)
     play_surface.blit(go_surface, go_rectangle)
-    scoreBoard(1)
+    scoreBoard(0)
     pygame.display.flip() # Update
     time.sleep(4)
-    pygame.quit() #pygame exit
-    sys.exit() #console exit
+    pygame.quit() # pygame exit
+    sys.exit() # console exit
 
 # Display Score
 def scoreBoard(choice = 1):
     style_font = pygame.font.SysFont('monaco', 30)
     score_surface = style_font.render('Score: {0}'.format(score), True, black)
     score_rectangle = score_surface.get_rect()
+    fps_surface = style_font.render('Speed: {0}fps'.format(game_speed), True, black)
+    fps_rectangle = fps_surface.get_rect()
     if choice == 1:
+        fps_rectangle.midtop = (600, 10)
         score_rectangle.midtop = (80, 10)
     else:
         score_rectangle.midtop = (360, 120)
+        fps_rectangle.midtop = (360, 200)
     play_surface.blit(score_surface, score_rectangle)
-    
+    play_surface.blit(fps_surface, fps_rectangle)
 
 # Game Logic
 while True:
@@ -97,8 +101,9 @@ while True:
     if direction == 'DOWN':
         snake_position[1] += 10
 
-    #Snake Mechanism !!!NOT CHECKING FOR POISON YET!!!
+    #Snake Mechanism 
     snake_body.insert(0, list(snake_position))
+    #Food Check
     if snake_position[0] == food_position[0] and snake_position[1] == food_position[1]:
         score += 10
         food_spawn = False
@@ -113,10 +118,23 @@ while True:
         pygame.draw.rect(play_surface, blue, 
         pygame.Rect(position[0], position[1], 10, 10))
     
+    # Food Spawn
     pygame.draw.rect(play_surface, orange, 
     pygame.Rect(food_position[0], food_position[1], 10, 10))
+    
+    # Posion Check
+    if snake_position[0] == poison_position[0] and snake_position[1] == poison_position[1]:
+        game_speed += 3
+        poison_spawn = False
+    if poison_spawn == False:
+        poison_position = [(random.randrange(1, 72)*10), (random.randrange(1, 46)*10)]
+    poison_spawn = True
 
-    if snake_position[0] > 710 or snake_position[1] < 0:
+    #Posion Spawn
+    pygame.draw.rect(play_surface, purple, 
+    pygame.Rect(poison_position[0], poison_position[1], 10, 10))
+
+    if snake_position[0] > 710 or snake_position[0] < 0:
         endGame()
     if snake_position[1] > 450 or snake_position[1] < 0:
         endGame()
@@ -127,10 +145,7 @@ while True:
 
     scoreBoard(1)
     pygame.display.flip()
-    fps_controller.tick(30)
+    fps_controller.tick(game_speed)
 
     #pyinstaller
     #executable
-
-    #edible poison speeds up game
-    #sart screen
